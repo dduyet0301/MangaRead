@@ -10,5 +10,8 @@ import UIKit
 
 class HeaderCollectionReusableView: UICollectionReusableView {
         
+    @IBOutlet weak var btnPrev: UIButton!
+    @IBOutlet weak var btnNext: UIButton!
     @IBOutlet weak var lbPage: UILabel!
+
 }

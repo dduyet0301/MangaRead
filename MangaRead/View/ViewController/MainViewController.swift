@@ -12,10 +12,10 @@ import SDWebImage
 class MainViewController: UIViewController {
     @IBOutlet weak var collectionView: UICollectionView!
     let getData = GetData()
-    var page = 1
-    //    var pageLatest = 1
-    //    var pageUpdates = 1
-    //    var pagePopular = 1
+//    var page = 1
+        var pageLatest = 1
+        var pageUpdates = 1
+        var pagePopular = 1
     var currentSegment = 0
     var yL: CGFloat = 0.0
     var yU: CGFloat = 0.0
@@ -23,9 +23,9 @@ class MainViewController: UIViewController {
     
     override func loadView() {
         super.loadView()
-        getData.fetchLatestManga(collectionView, page: page)
-        getData.fetchUpdatesManga(collectionView, page: page)
-        getData.fetchPopularManga(collectionView, page: page)
+        getData.fetchLatestManga(collectionView, page: pageLatest)
+        getData.fetchUpdatesManga(collectionView, page: pageUpdates)
+        getData.fetchPopularManga(collectionView, page: pagePopular)
     }
     
     override func viewDidLoad() {
@@ -81,36 +81,74 @@ extension MainViewController: UICollectionViewDataSource {
     }
     
     @objc func prevPage() {
-        if page > 1 {
-            page -= 1
+        if currentSegment == 0 {
+            prev(page: pageLatest)
+        } else if currentSegment == 1 {
+            prev(page: pageUpdates)
+        } else if currentSegment == 2 {
+            prev(page: pagePopular)
         }
-        print("prev")
-        collectionView.reloadData()
     }
     
     @objc func nextPage() {
-        if page < 39 {
-            page += 1
+        if currentSegment == 0 {
+            next(page: pageLatest)
+        } else if currentSegment == 1 {
+             next(page: pageUpdates)
+        } else if currentSegment == 2 {
+             next(page: pagePopular)
         }
-        print("next")
-        collectionView.reloadData()
+    }
+    
+    func prev(page: Int) {
+        var currentPage: Int
+        currentPage = page
+        if currentPage > 1 {
+            currentPage -= 1
+        }
+    }
+    
+    func next(page: Int) {
+        var currentPage: Int
+        currentPage = page
+        if currentPage < 39 {
+            currentPage += 1
+        }
     }
     
     func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
         switch kind {
         case UICollectionView.elementKindSectionHeader:
             if let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderCell", for: indexPath) as? HeaderCollectionReusableView {
-                headerView.lbPage.text = "\(page)"
+                if currentSegment == 0 {
+                    headerChange(headerView, pageLatest)
+                } else if currentSegment == 1 {
+                     headerChange(headerView, pageUpdates)
+                } else if currentSegment == 2 {
+                     headerChange(headerView, pagePopular)
+                }
                 return headerView }
         case UICollectionView.elementKindSectionFooter:
             if let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "FooterCell", for: indexPath) as? FooterCollectionReusableView {
-                footerView.lbPage.text = "\(page)"
+                
                 return footerView
             }
         default:
             assert(false, "Unexpected element kind")
         }
         return UICollectionReusableView()
+    }
+    
+    func headerChange(_ header: HeaderCollectionReusableView,_ page: Int) {
+        header.lbPage.text = "\(page)"
+        header.btnPrev.addTarget(self, action: #selector(prevPage), for: .touchUpInside)
+        header.btnNext.addTarget(self, action: #selector(nextPage), for: .touchUpInside)
+    }
+    
+    func footerChange(_ footer: FooterCollectionReusableView, _ page: Int) {
+        footer.lbPage.text = "\(page)"
+//        footer.btnPrev.addTarget(self, action: #selector(prevPage), for: .touchUpInside)
+//        footer.btnNext.addTarget(self, action: #selector(nextPage), for: .touchUpInside)
     }
 }
 
@@ -127,7 +165,7 @@ extension MainViewController: UICollectionViewDelegate {
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         let mangaDetail = storyboard?.instantiateViewController(withIdentifier: "MangaDetailViewController") as! MangaDetailViewController
-        mangaDetail.controllerTitle = Contains.arrManga[indexPath.row].title
+        mangaDetail.title = Contains.arrManga[indexPath.row].title
         mangaDetail.urlDetail = Contains.arrManga[indexPath.row].url
         self.navigationController?.pushViewController(mangaDetail, animated: true)
     }

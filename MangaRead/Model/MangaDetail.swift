@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct MangaDetail {
+class MangaDetail {
     var image: String
     var title: String
     var star: String
@@ -23,7 +23,7 @@ struct MangaDetail {
     var status: String
     var latest: String
     var summary: String
-    var chapter: String
+    var chapters: [Chapter]
     
     init(image: String,
          title: String,
@@ -39,7 +39,7 @@ struct MangaDetail {
          status: String,
          latest: String,
          summary: String,
-         chapter: String) {
+         chapters: [Chapter]) {
         self.image = image
         self.title = title
         self.star = star
@@ -54,6 +54,24 @@ struct MangaDetail {
         self.status = status
         self.latest = latest
         self.summary = summary
-        self.chapter = chapter
+        self.chapters = chapters
+    }
+    
+    public func removeDetail() {
+        self.image = ""
+        self.title = ""
+        self.star = ""
+        self.rating = ""
+        self.popularity = ""
+        self.alternative = ""
+        self.author = ""
+        self.artist = ""
+        self.genre = ""
+        self.type = ""
+        self.release = ""
+        self.status = ""
+        self.latest = ""
+        self.summary = ""
+        self.chapters = []
     }
 }
