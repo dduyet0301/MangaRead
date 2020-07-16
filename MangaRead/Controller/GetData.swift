@@ -13,7 +13,7 @@ import Alamofire
 
 class GetData {
     let header = ["User-Agent":"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) coc_coc_browser/86.0.180 Chrome/80.0.3987.180 Safari/537.36",
-                  "Cookie":"__cfduid=d29dfbf4fe057a7136a9a11c43c5fac6d1594006102; _ga=GA1.2.599817998.1594006104; _gid=GA1.2.2147190331.1594006104; set=theme=1&h=1&img_load=1&img_zoom=1&img_tool=1&twin_m=0&twin_c=0&manga_a_warn=1&history=1&timezone=14; Hm_lvt_5ee99fa43d3e817978c158dfc8eb72ad=1594090355,1594102250,1594173353,1594259013; cf_clearance=015dc63630abdf1154e7bfb82bfd62e0c1b008b8-1594267885-0-1zedb55dafz1ba6e01z809c3d3d-150; _gat_gtag_UA_17788005_10=1; Hm_lpvt_5ee99fa43d3e817978c158dfc8eb72ad=1594285465; __atuvc=192%7C28; __atuvs=5f06dd94e82fb9dc001"]
+                  "Cookie":"__cfduid=d29dfbf4fe057a7136a9a11c43c5fac6d1594006102; _ga=GA1.2.599817998.1594006104; set=theme=1&h=1&img_load=1&img_zoom=1&img_tool=1&twin_m=0&twin_c=0&manga_a_warn=1&history=1&timezone=14; _gid=GA1.2.582730129.1594637047; Hm_lvt_5ee99fa43d3e817978c158dfc8eb72ad=1594692758,1594707373,1594778377,1594865776; cf_chl_1=430c027a006e71b; cf_clearance=2287ddf8afee2d3a178e4bdbd695b19d9d413d6d-1594870281-0-1zedb55dafz1ba6e01z809c3d3d-150; Hm_lpvt_5ee99fa43d3e817978c158dfc8eb72ad=1594872942; _gat_gtag_UA_17788005_10=1; __atuvc=256%7C28%2C113%7C29; __atuvs=5f0fca0a5cc6da1d00e"]
     func fetchLatestManga (_ collectionView: UICollectionView, page: Int) {
         //latest
         Alamofire.request("https://mangapark.net/latest/\(page)", method: .get, headers: header).responseString { (myResponse) in
@@ -24,22 +24,7 @@ class GetData {
                 do{
                     let parse = try SwiftSoup.parse(html!)
                     Contains.arrLatest.removeAll()
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item first") {
-                        self.getLatestItem(element: element)
-                    }
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item ") {
-                        self.getLatestItem(element: element)
-                    }
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item  new") {
-                        self.getLatestItem(element: element)
-                    }
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item  hot") {
-                        self.getLatestItem(element: element)
-                    }
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item last") {
-                        self.getLatestItem(element: element)
-                    }
-                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("d-flex flex-row item last hot") {
+                    for element in try parse.getElementsByClass("ls1")[0].getElementsByClass("item") {
                         self.getLatestItem(element: element)
                     }
                      NotificationCenter.default.post(name: NSNotification.Name("reload"), object: nil)
@@ -81,7 +66,8 @@ class GetData {
                     let parse = try SwiftSoup.parse(html!)
                     Contains.arrPopular.removeAll()
                     for element in try parse.getElementsByClass("manga-list")[0].getElementsByClass("item") {
-                         self.getPopularItem(element: element)
+                         let popular = self.getPopularAndUpdatesItem(element: element)
+                        Contains.arrPopular.append(popular)
                     }
                     collectionView.reloadData()
                     print("fetch popular")
@@ -96,16 +82,16 @@ class GetData {
         }
     }
     
-    func getPopularItem(element: Element) {
+    func getPopularAndUpdatesItem(element: Element) -> Manga {
         do {
             let title = try element.select("a").select("img").attr("title")
             let image = try element.select("a").select("img").attr("src")
             let latestChapter = try element.select("ul").select("a").select("b").text()
             let url = try element.select("h2").select("a").attr("href")
-            let manga = Manga(title: title, image: image, latestChapter: latestChapter, url: url)
-            Contains.arrPopular.append(manga)
+            return Manga(title: title, image: image, latestChapter: latestChapter, url: url)
         } catch {
             debugPrint(error)
+            return Manga(title: "", image: "", latestChapter: "", url: "")
         }
     }
     
@@ -120,7 +106,8 @@ class GetData {
                     let parse = try SwiftSoup.parse(html!)
                     Contains.arrUpdates.removeAll()
                     for element in try parse.getElementsByClass("manga-list")[0].getElementsByClass("item new") {
-                       self.getUpdatesItem(element: element)
+                      let updates = self.getPopularAndUpdatesItem(element: element)
+                        Contains.arrUpdates.append(updates)
                     }
                     collectionView.reloadData()
                     print("fetch updates")
@@ -132,19 +119,6 @@ class GetData {
                 print("loi \(myResponse.error!)")
                 break
             }
-        }
-    }
-    
-    func getUpdatesItem(element: Element) {
-        do {
-            let title = try element.select("a").select("img").attr("title")
-            let image = try element.select("a").select("img").attr("src")
-            let latestChapter = try element.select("ul").select("a").select("b").text()
-            let url = try element.select("h2").select("a").attr("href")
-            let manga = Manga(title: title, image: image, latestChapter: latestChapter, url: url)
-            Contains.arrUpdates.append(manga)
-        } catch {
-            debugPrint(error)
         }
     }
     
@@ -162,7 +136,7 @@ class GetData {
                     let element = try parse.getElementsByClass("mt-2 volume")[0]
                     var arrChapter = Contains.arrChapter
                     let image = try elements.select("div")[0].select("div")[0].select("div").select("img").attr("src")
-                    let title = try elements.select("div")[1].select("h2").select("a").text()
+                    let title = try elements.select("div")[2].select("div").select("div").select("img").attr("title")
                     let star = try elements.select("tbody").select("tr")[0].select("i").text()
                     let rating = try elements.select("tbody").select("tr")[1].select("td").text()
                     let popularity = try elements.select("tbody").select("tr")[2].select("td").text()
@@ -201,11 +175,11 @@ class GetData {
         }
     }
     
-    func fetchMangaImage(_ tableView: UITableView, url: String) {
+    func fetchMangaImage(url: String) {
         Alamofire.request("https://mangapark.net\(url)", method: .get, headers: header).responseString { (myResponse) in
             switch myResponse.result {
             case .success:
-                print(myResponse)
+//                print(myResponse)
                 let html = myResponse.result.value
                 do{
                     let parse = try SwiftSoup.parse(html!)
@@ -214,14 +188,47 @@ class GetData {
                     let end = data.lastIndex(of: "]")!
                     let listImage = data[start...end]
                     let json = try JSON(data: Data(listImage.utf8))
-                    Contains.arrImage.removeAll()
                     if let items = json.array {
+                        Contains.arrImage.removeAll()
                         for i in items {
                             Contains.arrImage.append(i["u"].stringValue)
                         }
                     }
-                    tableView.reloadData()
                     print("fetch image")
+                    NotificationCenter.default.post(name: Notification.Name("reloadImage"), object: nil)
+                } catch {
+                    debugPrint(error)
+                }
+                break
+            case .failure:
+                print("loi \(myResponse.error!)")
+                break
+            }
+        }
+    }
+    
+    func fetchSearchResult(orderBy: String, page: Int) {
+        let title = SearchTitleTableViewCell.title
+        let author = SearchTitleTableViewCell.author
+        let years = SearchViewController.selectedYear
+        let status = SearchTitleTableViewCell.status
+        var genres = ""
+        for i in SearchContentTableViewCell.arrGenreList {
+             genres += "\(i),"
+        }
+        Alamofire.request("https://mangapark.net/search?q=\(title)&autart=\(author)&status=\(status)&years=\(years)&genres=\(genres)&page=\(page)&orderby=\(orderBy)", method: .get, headers: header).responseString { (myResponse) in
+            switch myResponse.result {
+            case .success:
+//                print("ressss \(myResponse)")
+                let html = myResponse.result.value
+                do{
+                    let parsed = try SwiftSoup.parse(html!)
+                    Contains.arrSearchResult.removeAll()
+                    for element in try parsed.getElementsByClass("item") {
+                        let searchResult = self.getPopularAndUpdatesItem(element: element)
+                        Contains.arrSearchResult.append(searchResult)
+                    }
+                    NotificationCenter.default.post(name: Notification.Name("ReloadSearchResult"), object: nil)
                 } catch {
                     debugPrint(error)
                 }

@@ -14,6 +14,7 @@ class MangaDetailTableViewCell: UITableViewCell {
     @IBOutlet weak var lbStar: UILabel!
     @IBOutlet weak var lbDetail: UILabel!
     @IBOutlet weak var lbSummary: UILabel!
+    @IBOutlet weak var btnBookmark: UIButton!
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code

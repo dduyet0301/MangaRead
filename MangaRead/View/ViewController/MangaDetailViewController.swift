@@ -11,14 +11,46 @@ import SDWebImage
 
 class MangaDetailViewController: UIViewController {
     @IBOutlet weak var tableDetail: UITableView!
+    var bookmarked = false
     var urlDetail = ""
+    var mangaTitle = ""
     let getData = GetData()
+    let cache = MangaCache()
     
     override func viewDidLoad() {
         tableDetail.dataSource = self
         tableDetail.delegate = self
-        Contains.mangaDetail.removeDetail()
+        self.title = mangaTitle
         getData.fetchMangaDetail(tableDetail, url: urlDetail)
+        bookmarked = cache.itemExist(mangaTitle: mangaTitle, entity: Contains.BOOKMARK_COREDATA)
+        let button = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.bookmarks, target: self, action: #selector(bookmarking))
+        if bookmarked {
+            button.tintColor = .red
+        }
+        navigationItem.rightBarButtonItem = button
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        NotificationCenter.default.addObserver(self, selector: #selector(reload), name: NSNotification.Name("reloadDetail"), object: nil)
+    }
+    
+    @objc func reload() {
+        tableDetail.reloadData()
+        self.viewDidLoad()
+    }
+    
+    @objc func bookmarking() {
+        let title = Contains.mangaDetail.title
+        let image = Contains.mangaDetail.image
+        let latest = Contains.mangaDetail.latest
+        if bookmarked {
+            cache.delete(mangaTitle: title, entity: Contains.BOOKMARK_COREDATA)
+        } else {
+            cache.save(manga: Manga.init(title: title
+                , image: image, latestChapter: latest, url: urlDetail), entity: Contains.BOOKMARK_COREDATA)
+        }
+        NotificationCenter.default.post(name: Notification.Name("reloadTabReading"), object: nil)
+        viewDidLoad()
     }
 }
 
@@ -39,7 +71,7 @@ extension MangaDetailViewController: UITableViewDataSource {
             return cell
         } else {
             let cell = tableView.dequeueReusableCell(withIdentifier: "ChapterTableCell") as! ChapterListTableViewCell
-           cell.lbChapter.text = detail.chapters[indexPath.row - 1].name
+            cell.lbChapter.text = detail.chapters[indexPath.row - 1].name
             return cell
         }
     }
@@ -53,6 +85,7 @@ extension MangaDetailViewController: UITableViewDelegate {
             readManga.url = Contains.mangaDetail.chapters[indexPath.row - 1].url
             readManga.title = Contains.mangaDetail.chapters[indexPath.row - 1].name
             self.navigationController?.pushViewController(readManga, animated: true)
+           
         }
     }
 }

@@ -11,4 +11,6 @@ import UIKit
 class FooterCollectionReusableView: UICollectionReusableView {
         
     @IBOutlet weak var lbPage: UILabel!
+    @IBOutlet weak var btnPrev: UIButton!
+    @IBOutlet weak var btnNext: UIButton!
 }
