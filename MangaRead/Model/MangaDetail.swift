@@ -25,6 +25,24 @@ class MangaDetail {
     var summary: String
     var chapters: [Chapter]
     
+    init() {
+        self.image = ""
+        self.title = ""
+        self.star = ""
+        self.rating = ""
+        self.popularity = ""
+        self.alternative = ""
+        self.author = ""
+        self.artist = ""
+        self.genre = ""
+        self.type = ""
+        self.release = ""
+        self.status = ""
+        self.latest = ""
+        self.summary = ""
+        self.chapters = []
+    }
+    
     init(image: String,
          title: String,
          star: String,
@@ -55,23 +73,5 @@ class MangaDetail {
         self.latest = latest
         self.summary = summary
         self.chapters = chapters
-    }
-    
-    public func removeDetail() {
-        self.image = ""
-        self.title = ""
-        self.star = ""
-        self.rating = ""
-        self.popularity = ""
-        self.alternative = ""
-        self.author = ""
-        self.artist = ""
-        self.genre = ""
-        self.type = ""
-        self.release = ""
-        self.status = ""
-        self.latest = ""
-        self.summary = ""
-        self.chapters = []
     }
 }

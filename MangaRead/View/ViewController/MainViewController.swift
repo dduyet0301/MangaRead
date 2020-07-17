@@ -14,6 +14,12 @@ class MainViewController: UIViewController {
     let getData = GetData()
     let cache = MangaCache()
     var arrManga: [Manga] = []
+    var arrLatest: [Manga] = []
+    var arrUpdates: [Manga] = []
+    var arrPopular: [Manga] = []
+    var isLoaded = false
+    
+    @IBOutlet weak var mainSegment: UISegmentedControl!
     var pageLatest = 1
     var pageUpdates = 1
     var pagePopular = 1
@@ -22,23 +28,49 @@ class MainViewController: UIViewController {
     var yU: CGFloat = 0.0
     var yP: CGFloat = 0.0
     
-    override func loadView() {
-        super.loadView()
-        getData.fetchLatestManga(collectionView, page: pageLatest)
-        getData.fetchUpdatesManga(collectionView, page: pageUpdates)
-        getData.fetchPopularManga(collectionView, page: pagePopular)
-    }
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         collectionView.dataSource = self
         collectionView.delegate = self
         tabBarController?.delegate = self
-        arrManga = Contains.arrLatest
-        collectionView.reloadData()
-        NotificationCenter.default.addObserver(self, selector: #selector(reload), name: NSNotification.Name("reload"), object: nil)
         let searchButton = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.search, target: self, action: #selector(search))
         tabBarController!.navigationItem.rightBarButtonItem = searchButton
+        
+        getData.fetchLatestManga(page: pageLatest, callback: addLatest(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
+        getData.fetchUpdatesManga(page: pageUpdates, callback: addUpdates(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
+        getData.fetchPopularManga(page: pagePopular, callback: addPopular(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
+    }
+    
+    func checkDataLoaded(isLoaded: Bool) {
+        self.isLoaded = isLoaded
+    }
+    
+    func checkDataInCurrentSegment() {
+        if currentSegment == 0 {
+            arrManga = arrLatest
+        } else if currentSegment == 1 {
+            arrManga = arrUpdates
+        } else {
+            arrManga = arrPopular
+        }
+    }
+    
+    func addLatest(arr: [Manga]) {
+        arrLatest = arr
+        checkDataInCurrentSegment()
+        collectionView.reloadData()
+    }
+    
+    func addUpdates(arr: [Manga]) {
+        arrUpdates = arr
+        checkDataInCurrentSegment()
+        collectionView.reloadData()
+    }
+    
+    func addPopular(arr: [Manga]) {
+        arrPopular = arr
+        checkDataInCurrentSegment()
+        collectionView.reloadData()
     }
     
     @objc func search() {
@@ -46,25 +78,21 @@ class MainViewController: UIViewController {
         self.navigationController?.pushViewController(search, animated: true)
     }
     
-    @objc func reload (notification: NSNotification) {
-        self.viewDidLoad()
-    }
-    
     @IBAction func didChangeSegment(_ sender: UISegmentedControl) {
         if sender.selectedSegmentIndex == 0 {
             currentSegment = 0
             collectionView.setContentOffset(CGPoint(x: 0, y: yL), animated: true)
-            arrManga = Contains.arrLatest
+            arrManga = arrLatest
             collectionView.reloadData()
         } else if sender.selectedSegmentIndex == 1 {
             currentSegment = 1
             collectionView.setContentOffset(CGPoint(x: 0, y: yU), animated: true)
-            arrManga = Contains.arrUpdates
+            arrManga = arrUpdates
             collectionView.reloadData()
         } else if sender.selectedSegmentIndex == 2 {
             currentSegment = 2
             collectionView.setContentOffset(CGPoint(x: 0, y: yP), animated: true)
-            arrManga = Contains.arrPopular
+            arrManga = arrPopular
             collectionView.reloadData()
         }
     }
@@ -92,6 +120,12 @@ extension MainViewController: UICollectionViewDataSource {
         switch kind {
         case UICollectionView.elementKindSectionHeader:
             if let headerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "HeaderCell", for: indexPath) as? HeaderCollectionReusableView {
+                if !isLoaded {
+                    headerView.isUserInteractionEnabled = false
+                } else {
+                    headerView.isUserInteractionEnabled = true
+                    mainSegment.isUserInteractionEnabled = true
+                }
                 if currentSegment == 0 {
                     headerChange(headerView, pageLatest)
                 } else if currentSegment == 1 {
@@ -102,6 +136,11 @@ extension MainViewController: UICollectionViewDataSource {
                 return headerView }
         case UICollectionView.elementKindSectionFooter:
             if let footerView = collectionView.dequeueReusableSupplementaryView(ofKind: kind, withReuseIdentifier: "FooterCell", for: indexPath) as? FooterCollectionReusableView {
+                if !isLoaded {
+                    footerView.isUserInteractionEnabled = false
+                } else {
+                    footerView.isUserInteractionEnabled = true
+                }
                 if currentSegment == 0 {
                     footerChange(footerView, pageLatest)
                 } else if currentSegment == 1 {
@@ -121,6 +160,7 @@ extension MainViewController: UICollectionViewDataSource {
         header.lbPage.text = "\(page)"
         header.btnPrev.addTarget(self, action: #selector(prevPage), for: .touchUpInside)
         header.btnNext.addTarget(self, action: #selector(nextPage), for: .touchUpInside)
+        
     }
     
     func footerChange(_ footer: FooterCollectionReusableView, _ page: Int) {
@@ -133,43 +173,38 @@ extension MainViewController: UICollectionViewDataSource {
         if currentSegment == 0 {
             if pageLatest > 1 {
                 pageLatest -= 1
-                getData.fetchLatestManga(collectionView, page: pageLatest)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchLatestManga(page: pageLatest, callback: addLatest(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         } else if currentSegment == 1 {
             if pageUpdates > 1 {
                 pageUpdates -= 1
-                getData.fetchUpdatesManga(collectionView, page: pageUpdates)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchUpdatesManga(page: pageUpdates, callback: addUpdates(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         } else if currentSegment == 2 {
             if pagePopular > 1 {
                 pagePopular -= 1
-                getData.fetchPopularManga(collectionView, page: pagePopular)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchPopularManga(page: pagePopular, callback: addPopular(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         }
         collectionView.reloadData()
     }
     
     @objc func nextPage() {
+        mainSegment.isUserInteractionEnabled = false
         if currentSegment == 0 {
             if pageLatest < 39 {
                 pageLatest += 1
-                getData.fetchLatestManga(collectionView, page: pageLatest)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchLatestManga(page: pageLatest, callback: addLatest(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         } else if currentSegment == 1 {
             if pageUpdates < 39 {
                 pageUpdates += 1
-                getData.fetchUpdatesManga(collectionView, page: pageUpdates)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchUpdatesManga(page: pageUpdates, callback: addUpdates(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         } else if currentSegment == 2 {
             if pagePopular < 39 {
                 pagePopular += 1
-                getData.fetchPopularManga(collectionView, page: pagePopular)
-                collectionView.setContentOffset(CGPoint(x: 0, y: 0), animated: true)
+                getData.fetchPopularManga(page: pagePopular, callback: addPopular(arr:), callbackCheckLoaded: checkDataLoaded(isLoaded:))
             }
         }
         collectionView.reloadData()
@@ -196,7 +231,6 @@ extension MainViewController: UICollectionViewDelegate {
             cache.delete(mangaTitle: manga.title, entity: Contains.RECENT_COREDATA)
         }
         cache.save(manga: manga, entity: Contains.RECENT_COREDATA)
-        Contains.mangaDetail.removeDetail()
         self.navigationController?.pushViewController(mangaDetail, animated: true)
     }
 }
@@ -204,9 +238,8 @@ extension MainViewController: UICollectionViewDelegate {
 extension MainViewController: UITabBarControllerDelegate {
     func tabBarController(_ tabBarController: UITabBarController, didSelect viewController: UIViewController) {
         if tabBarController.selectedIndex == 1 {
-            Contains.arrBookmark = self.cache.get(entity: Contains.BOOKMARK_COREDATA)
-            Contains.arrRecent = self.cache.get(entity: Contains.RECENT_COREDATA)
-            viewController.viewDidLoad()
+            //reload reading tab
+            NotificationCenter.default.post(name: Notification.Name("ReloadReadingTab"), object: nil)
         }
     }
 }

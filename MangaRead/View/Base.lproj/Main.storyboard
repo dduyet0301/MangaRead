@@ -173,6 +173,7 @@
                     <navigationItem key="navigationItem" id="x3F-Uj-tNI"/>
                     <connections>
                         <outlet property="collectionView" destination="hgB-fF-bIe" id="scz-Om-c9P"/>
+                        <outlet property="mainSegment" destination="s4e-1d-ha1" id="bik-3j-Ebw"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>

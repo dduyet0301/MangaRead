@@ -24,7 +24,7 @@ class MangaCache {
         mangaDataCore.setValue(manga.url, forKey: "url")
         do {
             try managedContext.save()
-            debugPrint("saved")
+            debugPrint("save")
         } catch {
             debugPrint("could not save")
         }

@@ -6,4 +6,5 @@ pod 'Alamofire', '~> 4.9'
 pod 'SwiftSoup'
 pod 'SDWebImage', '~> 5.0'
 pod 'SwiftyJSON', '~> 4.0'
+pod 'SVProgressHUD'
 end

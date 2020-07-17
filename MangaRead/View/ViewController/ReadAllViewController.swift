@@ -19,6 +19,7 @@ class ReadAllViewController: UIViewController {
     @IBOutlet var swipeLeft: UISwipeGestureRecognizer!
     @IBOutlet var swipeRight: UISwipeGestureRecognizer!
     
+    var arrImage: [String] = []
     var url = ""
     let getData = GetData()
     var currentPage = 0
@@ -28,37 +29,41 @@ class ReadAllViewController: UIViewController {
         scrollView.delegate = self
         scrollView.minimumZoomScale = 1.0
         scrollView.maximumZoomScale = 5.0
-        getData.fetchMangaImage(url: url)
+        getData.fetchMangaImage(url: url, callback: addImage(image:))
         btnPrev.addTarget(self, action: #selector(prevPage), for: .touchUpInside)
         btnNext.addTarget(self, action: #selector(nextPage), for: .touchUpInside)
         swipeLeft.addTarget(self, action: #selector(nextPage))
         scrollView.addGestureRecognizer(swipeLeft)
         swipeRight.addTarget(self, action: #selector(prevPage))
         scrollView.addGestureRecognizer(swipeRight)
-        if Contains.arrImage.isEmpty {
+        if arrImage.isEmpty {
             lbPage.text = "0/0"
         }
-         NotificationCenter.default.addObserver(self, selector: #selector(reload), name: NSNotification.Name("reloadImage"), object: nil)
     }
     
-    @objc func reload() {
-        img.sd_setImage(with: URL(string: Contains.arrImage[0]))
-        lbPage.text = "\(currentPage + 1)/\(Contains.arrImage.count)"
+    func addImage(image: [String]) {
+        arrImage = image
+        reload()
+    }
+    
+    func reload() {
+        img.sd_setImage(with: URL(string: arrImage[0]))
+        lbPage.text = "\(currentPage + 1)/\(arrImage.count)"
     }
     
     @objc func prevPage() {
         if currentPage > 0 {
             currentPage -= 1
-            lbPage.text = "\(currentPage + 1)/\(Contains.arrImage.count)"
-            img.sd_setImage(with: URL(string: Contains.arrImage[currentPage]))
+            lbPage.text = "\(currentPage + 1)/\(arrImage.count)"
+            img.sd_setImage(with: URL(string: arrImage[currentPage]))
         }
     }
     
     @objc func nextPage() {
-        if currentPage < Contains.arrImage.count - 1 {
+        if currentPage < arrImage.count - 1 {
             currentPage += 1
-            lbPage.text = "\(currentPage + 1)/\(Contains.arrImage.count)"
-            img.sd_setImage(with: URL(string: Contains.arrImage[currentPage]))
+            lbPage.text = "\(currentPage + 1)/\(arrImage.count)"
+            img.sd_setImage(with: URL(string: arrImage[currentPage]))
         }
     }
 }

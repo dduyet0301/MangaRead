@@ -11,6 +11,8 @@ import SDWebImage
 
 class MangaDetailViewController: UIViewController {
     @IBOutlet weak var tableDetail: UITableView!
+    var mangaDetail = MangaDetail.init()
+
     var bookmarked = false
     var urlDetail = ""
     var mangaTitle = ""
@@ -21,7 +23,7 @@ class MangaDetailViewController: UIViewController {
         tableDetail.dataSource = self
         tableDetail.delegate = self
         self.title = mangaTitle
-        getData.fetchMangaDetail(tableDetail, url: urlDetail)
+        getData.fetchMangaDetail(url: urlDetail, callback: addMangaDetail(detail:))
         bookmarked = cache.itemExist(mangaTitle: mangaTitle, entity: Contains.BOOKMARK_COREDATA)
         let button = UIBarButtonItem(barButtonSystemItem: UIBarButtonItem.SystemItem.bookmarks, target: self, action: #selector(bookmarking))
         if bookmarked {
@@ -30,37 +32,33 @@ class MangaDetailViewController: UIViewController {
         navigationItem.rightBarButtonItem = button
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        NotificationCenter.default.addObserver(self, selector: #selector(reload), name: NSNotification.Name("reloadDetail"), object: nil)
-    }
-    
-    @objc func reload() {
+    func addMangaDetail(detail: MangaDetail) {
+        mangaDetail = detail
         tableDetail.reloadData()
-        self.viewDidLoad()
     }
     
     @objc func bookmarking() {
-        let title = Contains.mangaDetail.title
-        let image = Contains.mangaDetail.image
-        let latest = Contains.mangaDetail.latest
+        let title = mangaDetail.title
+        let image = mangaDetail.image
+        let latest = mangaDetail.latest
         if bookmarked {
             cache.delete(mangaTitle: title, entity: Contains.BOOKMARK_COREDATA)
         } else {
             cache.save(manga: Manga.init(title: title
                 , image: image, latestChapter: latest, url: urlDetail), entity: Contains.BOOKMARK_COREDATA)
         }
-        NotificationCenter.default.post(name: Notification.Name("reloadTabReading"), object: nil)
+        NotificationCenter.default.post(name: Notification.Name("ReloadTabReading"), object: nil)
         viewDidLoad()
     }
 }
 
 extension MangaDetailViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return Contains.mangaDetail.chapters.count + 1
+        return mangaDetail.chapters.count + 1
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let detail = Contains.mangaDetail
+        let detail = mangaDetail
         if indexPath.row == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "DetailTableCell") as! MangaDetailTableViewCell
             cell.imageThumbnail.sd_setImage(with: URL(string: "https:\(detail.image)"))
@@ -82,10 +80,9 @@ extension MangaDetailViewController: UITableViewDelegate {
         if indexPath.row != 0 {
             //chapter select
             let readManga = storyboard?.instantiateViewController(withIdentifier: "ReadAllViewController") as! ReadAllViewController
-            readManga.url = Contains.mangaDetail.chapters[indexPath.row - 1].url
-            readManga.title = Contains.mangaDetail.chapters[indexPath.row - 1].name
+            readManga.url = mangaDetail.chapters[indexPath.row - 1].url
+            readManga.title = mangaDetail.chapters[indexPath.row - 1].name
             self.navigationController?.pushViewController(readManga, animated: true)
-           
         }
     }
 }
