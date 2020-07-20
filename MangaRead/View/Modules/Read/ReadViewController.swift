@@ -9,7 +9,7 @@
 import UIKit
 import SDWebImage
 
-class ReadAllViewController: UIViewController {
+class ReadViewController: UIViewController {
     
     @IBOutlet weak var scrollView: UIScrollView!
     @IBOutlet weak var img: UIImageView!
@@ -68,7 +68,7 @@ class ReadAllViewController: UIViewController {
     }
 }
 
-extension ReadAllViewController: UIScrollViewDelegate {
+extension ReadViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return self.img
     }

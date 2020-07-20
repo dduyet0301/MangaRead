@@ -61,6 +61,7 @@ extension MangaDetailViewController: UITableViewDataSource {
         let detail = mangaDetail
         if indexPath.row == 0 {
             let cell = tableView.dequeueReusableCell(withIdentifier: "DetailTableCell") as! MangaDetailTableViewCell
+            cell.selectionStyle = .none
             cell.imageThumbnail.sd_setImage(with: URL(string: "https:\(detail.image)"))
             cell.lbTitle.text = detail.title
             cell.lbStar.text = "Star: \(detail.star)"
@@ -79,7 +80,7 @@ extension MangaDetailViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         if indexPath.row != 0 {
             //chapter select
-            let readManga = storyboard?.instantiateViewController(withIdentifier: "ReadAllViewController") as! ReadAllViewController
+            let readManga = storyboard?.instantiateViewController(withIdentifier: "ReadViewController") as! ReadViewController
             readManga.url = mangaDetail.chapters[indexPath.row - 1].url
             readManga.title = mangaDetail.chapters[indexPath.row - 1].name
             self.navigationController?.pushViewController(readManga, animated: true)

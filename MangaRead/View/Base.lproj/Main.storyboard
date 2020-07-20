@@ -877,10 +877,10 @@
             </objects>
             <point key="canvasLocation" x="2503" y="-949"/>
         </scene>
-        <!--Read All View Controller-->
+        <!--Read View Controller-->
         <scene sceneID="8fO-mO-yrX">
             <objects>
-                <viewController storyboardIdentifier="ReadAllViewController" id="VFz-rO-d6Y" customClass="ReadAllViewController" customModule="MangaRead" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="ReadViewController" id="VFz-rO-d6Y" customClass="ReadViewController" customModule="MangaRead" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="II6-eW-u1X">
                         <rect key="frame" x="0.0" y="0.0" width="414" height="736"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
